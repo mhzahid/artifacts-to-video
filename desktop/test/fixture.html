@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta name="a2v:duration" content="3"><style>
+body{margin:0;background:#111;height:100vh;overflow:hidden}
+.box{position:absolute;top:40%;left:0;width:200px;height:200px;background:#14DB91;animation:move 3s linear forwards}
+@keyframes move{to{transform:translateX(1700px)}}
+#t{position:absolute;top:20px;left:20px;color:#fff;font:48px monospace}
+</style></head><body><div class="box"></div><div id="t">0</div>
+<script>
+const t0=performance.now();
+(function f(){document.getElementById('t').textContent=((performance.now()-t0)/1000).toFixed(2);requestAnimationFrame(f)})();
+const ac=new AudioContext();
+setTimeout(()=>{const o=ac.createOscillator(),g=ac.createGain();g.gain.value=.5;o.frequency.value=880;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.2);},1000);
+</script></body></html>

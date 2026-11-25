@@ -1,0 +1,232 @@
+/* Web app layout. Tokens and shared components live in base.css. */
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 56px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--panel);
+}
+.tag {
+  font-size: 13px;
+  color: var(--graphite);
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 20px;
+  align-items: start;
+  flex: 1;
+}
+.col-left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.col-right {
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 56px - 40px);
+} /* 56px = header */
+
+/* ---- the viewer: drop zone first, then the artifact's preview frame */
+.drop {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-panel);
+  background: var(--viewer);
+  color: var(--viewer-text);
+  aspect-ratio: 16 / 9;
+  min-height: 260px;
+  cursor: pointer;
+  outline: 1px solid transparent;
+  outline-offset: -1px;
+  transition:
+    outline-color 0.15s,
+    box-shadow 0.15s;
+}
+.drop:hover,
+.drop.over {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.drop:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.drop-empty,
+.drop-busy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  padding: 24px;
+}
+.drop-empty strong {
+  font-size: 19px;
+  font-weight: 620;
+  font-stretch: 112%;
+  letter-spacing: -0.01em;
+}
+.drop-empty span {
+  color: var(--viewer-muted);
+  font-size: 13.5px;
+}
+.drop-ic {
+  width: 34px;
+  height: 34px;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.drop-busy {
+  flex-direction: row;
+  gap: 10px;
+  color: var(--viewer-muted);
+}
+
+.drop.has-file {
+  aspect-ratio: auto;
+  min-height: 0;
+  cursor: default;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+}
+.drop.has-file:hover {
+  outline-color: transparent;
+}
+.drop-file {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  padding: 12px;
+}
+.file-meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 16px;
+  align-items: start;
+  padding: 0 4px 4px;
+}
+.file-meta .chips {
+  grid-column: 1;
+}
+.file-meta .link {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  margin-top: 3px;
+}
+.drop-file img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  background: var(--viewer);
+  border-radius: 5px;
+  display: block;
+}
+.file-name {
+  font-weight: 620;
+  font-size: 16px;
+  font-stretch: 108%;
+  overflow-wrap: anywhere;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+.file-meta .chips {
+  margin: 4px 0 0;
+}
+
+/* ---- progress and result */
+.prog-head,
+.result-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.prog-stats {
+  font-size: 12.5px;
+  color: var(--graphite);
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-variant-numeric: tabular-nums;
+}
+.result video,
+.result img {
+  width: 100%;
+  border-radius: 5px;
+  background: var(--viewer);
+  display: block;
+  margin-bottom: 14px;
+}
+.result-head .mono {
+  font-size: 12.5px;
+  color: var(--graphite);
+}
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.foot {
+  text-align: center;
+  color: var(--graphite);
+  font-size: 12.5px;
+  padding: 4px 16px 24px;
+  max-width: 70ch;
+  margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+  .wrap {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+  .col-right {
+    position: static;
+    max-height: none;
+  }
+  .form-scroll {
+    overflow: visible;
+  }
+  .file-meta {
+    grid-template-columns: 1fr;
+  }
+  .file-meta .link {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: start;
+  }
+  .top {
+    padding: 0 16px;
+  }
+  .tag {
+    display: none;
+  }
+}

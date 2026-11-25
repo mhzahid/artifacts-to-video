@@ -1,0 +1,8 @@
+node_modules
+storage
+*.mp4
+*.webm
+*.mov
+*.gif
+.git
+desktop

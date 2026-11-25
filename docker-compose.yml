@@ -1,0 +1,27 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    init: true            # reaps Chromium child processes
+    shm_size: "1gb"       # Chromium needs more than Docker's 64 MB default
+    ports:
+      - "127.0.0.1:3000:3000"   # only Nginx talks to it
+    volumes:
+      - a2v-data:/data
+    environment:
+      RENDER_WORKERS: "3"         # browser pages per job (≈ vCPUs - 1)
+      RENDER_CONCURRENCY: "1"     # jobs at a time
+      QUEUE_MAX: "20"
+      MAX_DURATION: "300"         # seconds
+      MAX_RESOLUTION: "2160p"
+      MAX_UPLOAD_MB: "25"
+      JOB_TTL_MIN: "60"
+      JOB_TIMEOUT_MIN: "30"
+      TRUST_PROXY: "1"
+      COOKIE_SECURE: "1"
+    deploy:
+      resources:
+        limits:
+          memory: 6g
+volumes:
+  a2v-data:

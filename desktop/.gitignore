@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dist-*/
+browsers/
+engine/
+asset-mirror/
+*.pfx
+*.p12
+*.cer
+ui/finishing.js
+ui/base.css
+ui/fonts/

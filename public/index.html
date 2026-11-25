@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Artifact to Video</title>
+<meta name="description" content="Turn animated HTML artifacts into MP4, WebM, MOV or GIF with frame-exact timing and sound.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23161A21'/%3E%3Cpath d='M12.5 10v12l10-6z' fill='%2315DB90'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="logo" aria-hidden="true"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="6"/><path d="M12.5 10v12l10-6z"/></svg></span>
+    <span>Artifact to Video</span>
+  </div>
+  <span class="tag">HTML animations to MP4, WebM, MOV and GIF</span>
+</header>
+
+<main class="wrap">
+  <section class="col-left">
+    <label id="drop" class="drop" tabindex="0">
+      <input id="file" type="file" accept=".html,.htm,text/html" hidden>
+      <div class="drop-empty">
+        <svg class="drop-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4m0 0L8 8m4-4 4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+        <strong>Drop your HTML artifact here</strong>
+        <span>or click to choose a file, up to <span id="maxUp">25</span> MB</span>
+      </div>
+      <div class="drop-busy" hidden><span class="spinner"></span><span>Opening artifact…</span></div>
+      <div class="drop-file" hidden>
+        <img id="poster" alt="First frame of the artifact">
+        <div class="file-meta">
+          <div class="file-name" id="fileName"></div>
+          <div class="chips" id="chips"></div>
+          <button type="button" class="link" id="replace">Choose another file</button>
+        </div>
+      </div>
+    </label>
+
+    <div id="result" class="card result" hidden>
+      <div class="result-head">
+        <h2 id="resultTitle">Ready</h2>
+        <span class="mono muted" id="resultMeta"></span>
+      </div>
+      <video id="preview" controls playsinline preload="metadata" hidden></video>
+      <img id="gifPreview" alt="Rendered GIF" hidden>
+      <div class="actions">
+        <a id="download" class="btn primary" download>Download</a>
+        <a id="posterLink" class="btn ghost" download hidden>Poster image</a>
+        <button type="button" class="btn ghost" id="again">Convert again</button>
+      </div>
+    </div>
+
+    <div id="progress" class="card" hidden>
+      <div class="prog-head">
+        <h2 id="progStage">Queued</h2>
+        <button type="button" class="link danger" id="cancel">Cancel</button>
+      </div>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i id="barFill"></i></div>
+      <div class="prog-stats mono" id="progStats">Waiting for a free renderer…</div>
+    </div>
+
+    <div id="error" class="alert" role="alert" hidden></div>
+  </section>
+
+  <aside class="col-right card">
+    <h2>Export settings</h2>
+    <form id="form" autocomplete="off" novalidate>
+      <div class="form-scroll">
+      <label class="field preset-field"><span>Preset</span><select id="preset"></select></label>
+      <div class="grid2">
+        <label class="field"><span>Format</span><select id="format"></select></label>
+        <label class="field"><span>Resolution</span><select id="resolution"></select></label>
+        <label class="field"><span>Aspect ratio</span><select id="aspect"></select></label>
+        <label class="field"><span>Frame rate</span><select id="fps"></select></label>
+        <label class="field"><span>Quality</span>
+          <select id="quality"><option value="draft">Draft (fast)</option><option value="standard" selected>Standard</option><option value="high">High (lossless capture)</option></select>
+        </label>
+        <label class="field"><span>Duration</span>
+          <div class="dur"><input id="duration" type="number" min="0.5" step="0.1" placeholder="Auto"><span class="unit mono">sec</span></div>
+        </label>
+      </div>
+
+      <div class="toggle-row">
+        <div>
+          <div class="t-title">Sound</div>
+          <div class="t-sub" id="soundSub">Include the artifact's soundtrack</div>
+        </div>
+        <button type="button" class="switch" id="sound" role="switch" aria-checked="true" aria-label="Sound"><i></i></button>
+      </div>
+
+      <details class="adv" id="audioBox">
+        <summary>Soundtrack <span class="badge mono" id="audioBadge"></span></summary>
+        <label class="field"><span>Audio track</span>
+          <select id="audioTrack"><option value="artifact">The artifact's own sound</option></select>
+        </label>
+        <div id="audioOpts" hidden>
+          <label class="field"><span>Use it to</span>
+            <select id="audioMix"><option value="replace">Replace the artifact's sound</option><option value="mix">Mix with the artifact's sound</option></select>
+          </label>
+          <label class="field range-field"><span>Volume <output class="mono" id="audioVolumeVal" for="audioVolume">100%</output></span>
+            <input id="audioVolume" type="range" min="0" max="1" step="0.01" value="1" aria-label="Soundtrack volume">
+          </label>
+          <div class="toggle-row small">
+            <div><div class="t-title">Loop</div><div class="t-sub">Repeat the track if it's shorter than the video</div></div>
+            <button type="button" class="switch" id="audioLoop" role="switch" aria-checked="false" aria-label="Loop the soundtrack"><i></i></button>
+          </div>
+        </div>
+        <p class="au-note" id="audioNote" hidden></p>
+        <div class="au-files">
+          <div class="au-head"><span>Audio files</span><button type="button" class="btn ghost small" id="audioAdd">Add audio…</button></div>
+          <ul class="au-list" id="audioList"><li class="au-empty">No audio files yet. Add MP3, WAV, M4A, AAC, OGG, FLAC or Opus files, then pick one as the track.</li></ul>
+          <input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.oga,.flac,.opus" multiple hidden>
+        </div>
+      </details>
+
+      <details class="adv" id="trimBox">
+        <summary>Trim <span class="badge mono" id="trimBadge"></span></summary>
+        <div class="grid2">
+          <label class="field"><span>Start at</span>
+            <div class="dur"><input id="trimStart" type="number" min="0" step="0.1" placeholder="0"><span class="unit mono">sec</span></div>
+          </label>
+          <label class="field"><span>End at</span>
+            <div class="dur"><input id="trimEnd" type="number" min="0.1" step="0.1" placeholder="End"><span class="unit mono">sec</span></div>
+          </label>
+        </div>
+        <div class="trim-frames">
+          <div class="tf" id="trimStartFrame">
+            <div class="pp-frame"><img class="pp-img" alt="First frame of the video" hidden><span class="pp-msg"></span><span class="spinner pp-spin" hidden></span></div>
+            <input type="range" class="pp-scrub" id="trimStartScrub" min="0" max="1" step="any" value="0" aria-label="Start at">
+            <div class="tf-label"><span>First frame</span><span class="tf-time mono"></span></div>
+          </div>
+          <div class="tf" id="trimEndFrame">
+            <div class="pp-frame"><img class="pp-img" alt="Last frame of the video" hidden><span class="pp-msg"></span><span class="spinner pp-spin" hidden></span></div>
+            <input type="range" class="pp-scrub" id="trimEndScrub" min="0" max="1" step="any" value="1" aria-label="End at">
+            <div class="tf-label"><span>Last frame</span><span class="tf-time mono"></span></div>
+          </div>
+        </div>
+      </details>
+
+      <details class="adv" id="finishBox">
+        <summary>Fades &amp; ending <span class="badge mono" id="finishBadge"></span></summary>
+        <div class="grid2">
+          <label class="field"><span>Hold last frame</span>
+            <select id="hold"><option value="0">Off</option><option value="1">1 s</option><option value="2">2 s</option><option value="3">3 s</option><option value="5">5 s</option></select>
+          </label>
+          <label class="field"><span>Fade length</span>
+            <select id="fadeDuration"><option value="0.3">0.3 s</option><option value="0.5" selected>0.5 s</option><option value="1">1 s</option><option value="2">2 s</option></select>
+          </label>
+        </div>
+        <div class="toggle-row small">
+          <div><div class="t-title">Fade in</div><div class="t-sub">From black, picture and sound</div></div>
+          <button type="button" class="switch" id="fadeIn" role="switch" aria-checked="false" aria-label="Fade in"><i></i></button>
+        </div>
+        <div class="toggle-row small">
+          <div><div class="t-title">Fade out</div><div class="t-sub">To black at the very end (after any hold)</div></div>
+          <button type="button" class="switch" id="fadeOut" role="switch" aria-checked="false" aria-label="Fade out"><i></i></button>
+        </div>
+      </details>
+
+      <details class="adv" id="wmBox">
+        <summary>Watermark <span class="badge mono" id="wmBadge"></span></summary>
+        <div class="toggle-row small first">
+          <div><div class="t-title">Add logo / watermark</div><div class="t-sub">PNG with transparency works best (PNG, JPG or WebP)</div></div>
+          <button type="button" class="switch" id="wmOn" role="switch" aria-checked="false" aria-label="Add watermark"><i></i></button>
+        </div>
+        <div class="wm-pick">
+          <div class="wm-thumb" id="wmThumb"></div>
+          <div class="wm-name mono" id="wmName">No image chosen</div>
+          <button type="button" class="btn ghost small" id="wmChoose">Choose image…</button>
+          <input id="wmFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+        </div>
+        <div class="grid3 wm-grid">
+          <label class="field"><span>Position</span>
+            <select id="wmPos"><option value="br">Bottom right</option><option value="bl">Bottom left</option><option value="tr">Top right</option><option value="tl">Top left</option><option value="center">Center</option></select>
+          </label>
+          <label class="field"><span>Size</span>
+            <select id="wmSize"><option value="0.08">Small</option><option value="0.12" selected>Medium</option><option value="0.18">Large</option><option value="0.25">X-large</option></select>
+          </label>
+        </div>
+        <label class="field range-field wm-opacity"><span>Opacity <output class="mono" id="wmOpacityVal" for="wmOpacity">85%</output></span>
+          <input id="wmOpacity" type="range" min="0.1" max="1" step="0.01" value="0.85" aria-label="Watermark opacity">
+        </label>
+      </details>
+
+      <details class="adv" id="posterBox">
+        <summary>Poster image <span class="badge mono" id="posterBadge"></span></summary>
+        <div class="toggle-row small first">
+          <div><div class="t-title">Save a poster image</div><div class="t-sub">A PNG of one frame, for thumbnails and cover images</div></div>
+          <button type="button" class="switch" id="posterOn" role="switch" aria-checked="false" aria-label="Save poster image"><i></i></button>
+        </div>
+        <div class="pp" id="posterPreview">
+          <div class="pp-frame"><img class="pp-img" alt="Preview of the poster frame" hidden><img class="pp-wm" alt="" hidden><span class="pp-msg"></span><span class="spinner pp-spin" hidden></span></div>
+          <input type="range" class="pp-scrub" id="posterScrub" min="0" max="1" step="0.1" value="0" aria-label="Choose the poster frame">
+        </div>
+        <label class="field"><span>Frame at</span>
+          <div class="dur"><input id="posterTime" type="number" min="0" step="0.1" placeholder="Middle" title="Seconds into the finished video"><span class="unit mono">sec</span></div>
+        </label>
+      </details>
+
+      <details class="adv">
+        <summary>Advanced</summary>
+        <div class="grid2">
+          <label class="field"><span>Start mode</span>
+            <select id="mode"><option value="auto">Auto-detect</option><option value="click">Click a start button</option><option value="autoplay">Plays on load</option></select>
+          </label>
+          <label class="field"><span>Color scheme</span>
+            <select id="theme"><option value="light">Light</option><option value="dark">Dark</option></select>
+          </label>
+        </div>
+        <label class="field"><span>Start button</span><input id="startSelector" type="text" placeholder="Auto, e.g. #play" class="mono"></label>
+        <label class="field"><span>Hide elements</span><input id="hideSelectors" type="text" placeholder="e.g. #ui, .controls" class="mono"></label>
+        <div class="toggle-row small">
+          <div><div class="t-title">Auto-hide player controls</div><div class="t-sub">Hides sliders and control bars from the video</div></div>
+          <button type="button" class="switch" id="autoHide" role="switch" aria-checked="true" aria-label="Auto-hide player controls"><i></i></button>
+        </div>
+      </details>
+
+      </div>
+      <div class="dock">
+      <div class="tl tl-none" id="timeline" aria-live="polite">
+        <div class="tl-head"><strong>Output</strong><span class="tl-total"></span></div>
+        <div class="tl-lane tl-src"><span class="tl-name">Source</span><div class="tl-track"><i class="tl-body"></i><i class="tl-win"></i></div></div>
+        <div class="tl-lane tl-out"><span class="tl-name">Video</span><div class="tl-track" title="Click to choose the poster frame"><i class="tl-clip"></i><i class="tl-hold" title="Held last frame"></i><b class="tl-fi"></b><b class="tl-fo"></b><i class="tl-poster" title="Poster frame"></i></div></div>
+        <div class="tl-lane tl-aud" hidden><span class="tl-name">Audio</span><div class="tl-track"><i class="tl-snd"></i><b class="tl-afi"></b><b class="tl-afo"></b></div></div>
+        <div class="tl-scale" aria-hidden="true"><span class="tl-in"></span><span class="tl-out-t"></span><span class="tl-end"></span></div>
+        <div class="tl-msg"></div>
+      </div>
+      <div class="summary" id="summary"></div>
+      <button type="submit" class="btn primary wide" id="convert" disabled>Convert</button>
+      </div>
+    </form>
+  </aside>
+</main>
+
+<footer class="foot">
+  Frame-by-frame capture on a virtual clock, so nothing is dropped and timing is exact. Files are deleted automatically after an hour.
+</footer>
+
+<script src="app.js" type="module"></script>
+</body>
+</html>

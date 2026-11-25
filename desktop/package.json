@@ -1,0 +1,81 @@
+{
+  "name": "artifact-to-video",
+  "productName": "Artifact to Video",
+  "version": "1.0.1",
+  "description": "Convert animated HTML artifacts into MP4, WebM, MOV and GIF on your own computer.",
+  "author": "Codixel",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "sync": "node scripts/sync-engine.mjs",
+    "browsers": "node scripts/fetch-chromium.mjs",
+    "icon": "node scripts/make-icon.mjs",
+    "start": "npm run sync && npm run ensure && electron .",
+    "dist": "node scripts/dist.mjs",
+    "dist:dir": "node scripts/dist.mjs --dir",
+    "ensure": "node scripts/ensure-binaries.mjs",
+    "postinstall": "node scripts/ensure-binaries.mjs"
+  },
+  "dependencies": {
+    "ffmpeg-static": "5.2.0",
+    "playwright": "1.56.0"
+  },
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "26.17.0"
+  },
+  "build": {
+    "appId": "tech.codixel.artifact-to-video",
+    "productName": "Artifact to Video",
+    "copyright": "Codixel",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.cjs",
+      "ui/**",
+      "engine/**",
+      "asset-mirror/**",
+      "build/icon.png",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/ffmpeg-static/**",
+      "node_modules/playwright-core/**"
+    ],
+    "extraResources": [
+      {
+        "from": "browsers",
+        "to": "browsers",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "Artifact-to-Video-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Artifact to Video"
+    },
+    "afterPack": "scripts/after-pack.cjs"
+  }
+}

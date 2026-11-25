@@ -1,0 +1,22 @@
+{
+  "name": "artifacts-to-mp4",
+  "version": "1.0.0",
+  "description": "Convert animated HTML artifacts into MP4 / WebM / MOV / GIF with frame-exact timing and sample-exact sound.",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "render": "node src/cli.js",
+    "mirror": "node scripts/mirror-assets.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "multer": "^2.0.2",
+    "playwright": "1.56.0"
+  }
+}
